@@ -2,7 +2,14 @@
 
 const knex = require('../knex');
 
-// let searchTerm = 'gaga';
+process.stdout.write('\x1Bc');
+let id = '1008';
+let searchTerm = 'gaga';
+let newTitle = 'New Titles';
+let newContent = 'New Content';
+
+// Get All Notes accepts a searchTerm and finds notes with titles which contain the term. It returns an array of objects.
+
 // knex
 //   .select('notes.id', 'title', 'content')
 //   .from('notes')
@@ -21,12 +28,24 @@ const knex = require('../knex');
 
 
 // get notes by ID
-process.stdout.write('\x1Bc');
 
-let id = '1005';
+// knex
+//   .select()
+//   .from('notes')
+//   .where({id: id})
+//   .first()
+//   .then(row => console.log(JSON.stringify(row, null, 2)))
+//   .catch(err => console.error(err));
+
+// update notes by ID
+
 knex
-  .select()
+  .update({ 
+    title: newTitle, 
+    content: newContent
+  })
   .from('notes')
   .where({id: id})
-  .then(results => console.log(JSON.stringify(results[0], null, 2)))
+  .returning(['id', 'title', 'content'])
+  .then(result => console.log(JSON.stringify(result[0], null, 2)))
   .catch(err => console.error(err));
