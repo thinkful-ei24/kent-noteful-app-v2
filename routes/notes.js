@@ -6,17 +6,26 @@ const express = require('express');
 const router = express.Router();
 
 // TEMP: Simple In-Memory Database
-const data = require('../db/notes');
-const simDB = require('../db/simDB');
-const notes = simDB.initialize(data);
+// const data = require('../db/notes');
+// const simDB = require('../db/simDB');
+// const notes = simDB.initialize(data);
+
+const knex = require('../knex');
 
 // Get All (and search by query)
 router.get('/', (req, res, next) => {
   const { searchTerm } = req.query;
 
-  notes.filter(searchTerm)
-    .then(list => {
-      res.json(list);
+  knex('notes')
+    .select('id', 'title', 'content')
+    .modify(queryBuilder => {
+      if (searchTerm) {
+        queryBuilder.where('title', 'like', `${searchTerm}`);
+      }
+    })
+    .orderBy('notes.id')
+    .then(results => {
+      res.json(results);
     })
     .catch(err => {
       next(err);
@@ -26,8 +35,10 @@ router.get('/', (req, res, next) => {
 // Get a single item
 router.get('/:id', (req, res, next) => {
   const id = req.params.id;
-
-  notes.find(id)
+  knex('notes')
+    .select('id', 'title', 'content')
+    .where({id: id})
+    .first()
     .then(item => {
       if (item) {
         res.json(item);
@@ -60,11 +71,13 @@ router.put('/:id', (req, res, next) => {
     err.status = 400;
     return next(err);
   }
-
-  notes.update(id, updateObj)
+  knex('notes')
+    .update(updateObj)
+    .where({id: id})
+    .returning(['id', 'title', 'content'])
     .then(item => {
-      if (item) {
-        res.json(item);
+      if (item[0]) {
+        res.json(item[0]);
       } else {
         next();
       }
@@ -85,11 +98,12 @@ router.post('/', (req, res, next) => {
     err.status = 400;
     return next(err);
   }
-
-  notes.create(newItem)
+  knex('notes')
+    .insert(newItem)
+    .returning(['id', 'title', 'content'])
     .then(item => {
-      if (item) {
-        res.location(`http://${req.headers.host}/notes/${item.id}`).status(201).json(item);
+      if (item[0]) {
+        res.location(`http://${req.headers.host}/notes/${item[0].id}`).status(201).json(item[0]);
       }
     })
     .catch(err => {
@@ -101,7 +115,9 @@ router.post('/', (req, res, next) => {
 router.delete('/:id', (req, res, next) => {
   const id = req.params.id;
 
-  notes.delete(id)
+  knex('notes')
+    .del()
+    .where({id: id})
     .then(() => {
       res.sendStatus(204);
     })
