@@ -5,7 +5,7 @@ const knex = require('../knex');
 process.stdout.write('\x1Bc');
 let id = '1008';
 let searchTerm = 'gaga';
-let newTitle = 'New Titles';
+let newTitle = 'Nasdfes';
 let newContent = 'New Content';
 
 // Get All Notes accepts a searchTerm and finds notes with titles which contain the term. It returns an array of objects.
@@ -39,13 +39,23 @@ let newContent = 'New Content';
 
 // update notes by ID
 
-knex
-  .update({ 
+// knex
+//   .update({ 
+//     title: newTitle, 
+//     content: newContent
+//   })
+//   .from('notes')
+//   .where({id: id})
+//   .returning(['id', 'title', 'content'])
+//   .then(result => console.log(JSON.stringify(result[0], null, 2)))
+//   .catch(err => console.error(err));
+
+// Create a Note 
+knex('notes')
+  .insert({ 
     title: newTitle, 
     content: newContent
   })
-  .from('notes')
-  .where({id: id})
   .returning(['id', 'title', 'content'])
   .then(result => console.log(JSON.stringify(result[0], null, 2)))
   .catch(err => console.error(err));
