@@ -79,6 +79,7 @@ router.post('/', (req, res, next) => {
   }
 
   let noteId;
+
   knex.insert(newItem).into('notes').returning('id')
     .then(([id]) => {
       noteId = id;
@@ -116,9 +117,7 @@ router.put('/:id', (req, res, next) => {
     folder_id: (folderId) ? folderId : null
   };
 
-  knex('notes')
-    .update(updateObj)
-    .where({'notes.id': noteId})
+  knex('notes').update(updateObj).where({'notes.id': noteId})
     .then(() => knex.del().from('notes_tags').where({note_id: noteId}))
     .then(() => {
       const tagsInsert = tags.map(tagId => ({ note_id: noteId, tag_id: tagId }));
@@ -140,15 +139,9 @@ router.put('/:id', (req, res, next) => {
 router.delete('/:id', (req, res, next) => {
   const id = req.params.id;
 
-  knex('notes')
-    .del()
-    .where({id: id})
-    .then(() => {
-      res.sendStatus(204);
-    })
-    .catch(err => {
-      next(err);
-    });
+  knex('notes').del().where({id})
+    .then(() => res.sendStatus(204))
+    .catch(err => next(err));
 });
 
 module.exports = router;
