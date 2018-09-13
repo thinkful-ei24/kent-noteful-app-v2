@@ -47,4 +47,52 @@ router.get('/:id', (req, res, next) => {
     })
     .catch(err => next(err));
 });
+
+router.put('/:id', (req, res, next) => {
+  const { id } = req.params;
+  const { name } = req.body;
+  const updateObj = {};
+
+  /***** Never trust users. Validate input *****/
+  if (!name) {
+    const err = new Error('Missing `name` in request body');
+    err.status = 400;
+    return next(err);
+  }
+
+  updateObj.name = name;
+  
+  knex
+    .update(updateObj)
+    .from('tags')
+    .where({id})
+    .returning(['id', 'name'])
+    .then(result => {
+      const item = result[0];
+      if (item) {
+        res.json(item);
+      } else {
+        next();
+      }
+    })
+    .catch(err => {
+      next(err);
+    });
+});
+
+router.delete('/:id', (req, res, next) => {
+  const { id } = req.params;
+
+  knex
+    .del()
+    .from('tags')
+    .where({id})
+    .then(() => {
+      res.sendStatus(204);
+    })
+    .catch(err => {
+      next(err);
+    });
+});
+
 module.exports = router;
