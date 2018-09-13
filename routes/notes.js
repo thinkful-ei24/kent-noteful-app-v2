@@ -20,7 +20,7 @@ const getNoteById = function(noteId) {
   return getAllNotes().where('notes.id', noteId);
 };
 
-// Get All (and search by query)
+// Read all notes
 router.get('/', (req, res, next) => {
   const { searchTerm, folderId, tagId } = req.query;
 
@@ -46,7 +46,7 @@ router.get('/', (req, res, next) => {
     .catch(err => next(err));
 });
 
-// Get a single item
+// Read note by id
 router.get('/:id', (req, res, next) => {
   const { id } = req.params;
   getNoteById(id)
@@ -61,52 +61,7 @@ router.get('/:id', (req, res, next) => {
     .catch(err => next(err));
 });
 
-// Put update an item
-router.put('/:id', (req, res, next) => {
-  const noteId = req.params.id;
-  const { title, content, folderId, tags } = req.body;
-
-
-  /***** Never trust users - validate input *****/
-  if (!title) {
-    const err = new Error('Missing `title` in request body');
-    err.status = 400;
-    return next(err);
-  }
-
-  /***** Never trust users - validate input *****/
-  const updateObj = {
-    title: title,
-    content: content,
-    folder_id: (folderId) ? folderId : null
-  };
-
-  knex('notes')
-    .update(updateObj)
-    .where({'notes.id': noteId})
-    .returning('id')
-    .then(() => knex.del().from('notes_tags').where({note_id: noteId}))
-    .then(() => {
-      const tagsInsert = tags.map(tagId => ({ note_id: noteId, tag_id: tagId }));
-      console.log('logging tags');
-      console.log(tagsInsert);
-      return knex.insert(tagsInsert).into('notes_tags');
-    })
-    .then(() => {
-      return getNoteById(noteId);
-    })
-    .then(result => {
-      if (result) {
-        const hydrated = hydrateNotes(result)[0];
-        res.json(hydrated);
-      } else {
-        next();
-      }
-    })
-    .catch(err => next(err));
-});
-
-// Post (insert) an item
+// Create note
 router.post('/', (req, res, next) => {
   const { title, content, folderId, tags } = req.body;
 
@@ -128,13 +83,9 @@ router.post('/', (req, res, next) => {
     .then(([id]) => {
       noteId = id;
       const tagsInsert = tags.map(tagId => ({ note_id: noteId, tag_id: tagId }));
-      console.log('logging tags');
-      console.log(tagsInsert);
       return knex.insert(tagsInsert).into('notes_tags');
     })
-    .then(() => {
-      return getNoteById(noteId);
-    })
+    .then(() => getNoteById(noteId))
     .then(result => {
       if (result) {
         const hydrated = hydrateNotes(result)[0];
@@ -146,7 +97,46 @@ router.post('/', (req, res, next) => {
     .catch(err => next(err));
 });
 
-// Delete an item
+// Update note
+router.put('/:id', (req, res, next) => {
+  const noteId = req.params.id;
+  const { title, content, folderId, tags } = req.body;
+
+  /***** Never trust users - validate input *****/
+  if (!title) {
+    const err = new Error('Missing `title` in request body');
+    err.status = 400;
+    return next(err);
+  }
+
+  /***** Never trust users - validate input *****/
+  const updateObj = {
+    title: title,
+    content: content,
+    folder_id: (folderId) ? folderId : null
+  };
+
+  knex('notes')
+    .update(updateObj)
+    .where({'notes.id': noteId})
+    .then(() => knex.del().from('notes_tags').where({note_id: noteId}))
+    .then(() => {
+      const tagsInsert = tags.map(tagId => ({ note_id: noteId, tag_id: tagId }));
+      return knex.insert(tagsInsert).into('notes_tags');
+    })
+    .then(() => getNoteById(noteId))
+    .then(result => {
+      if (result) {
+        const hydrated = hydrateNotes(result)[0];
+        res.json(hydrated);
+      } else {
+        next();
+      }
+    })
+    .catch(err => next(err));
+});
+
+// Delete note
 router.delete('/:id', (req, res, next) => {
   const id = req.params.id;
 
