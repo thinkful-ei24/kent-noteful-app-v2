@@ -4,8 +4,6 @@ const express = require('express');
 const router = express.Router();
 const knex = require('../knex');
 
-module.exports = router;
-
 router.post('/', (req, res, next) => {
   const { name } = req.body;
 
@@ -27,3 +25,26 @@ router.post('/', (req, res, next) => {
     })
     .catch(err => next(err));
 });
+
+router.get('/', (req, res, next) => {
+  knex
+    .select()
+    .from('tags')
+    .then(results => {
+      res.json(results);
+    })
+    .catch(err => next(err));
+});
+
+router.get('/:id', (req, res, next) => {
+  const { id } = req.params;
+  knex
+    .select()
+    .from('tags')
+    .where({id})
+    .then(results => {
+      res.json(results);
+    })
+    .catch(err => next(err));
+});
+module.exports = router;
