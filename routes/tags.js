@@ -5,24 +5,15 @@ const router = express.Router();
 const knex = require('../knex');
 
 router.get('/', (req, res, next) => {
-  knex
-    .select()
-    .from('tags')
-    .then(results => {
-      res.json(results);
-    })
+  knex.select().from('tags')
+    .then(results => res.json(results))
     .catch(err => next(err));
 });
 
 router.get('/:id', (req, res, next) => {
   const { id } = req.params;
-  knex
-    .select()
-    .from('tags')
-    .where({id})
-    .then(results => {
-      res.json(results);
-    })
+  knex.first().from('tags').where({id})
+    .then(results => res.json(results))
     .catch(err => next(err));
 });
 
@@ -38,8 +29,7 @@ router.post('/', (req, res, next) => {
 
   const newItem = { name };
 
-  knex.insert(newItem)
-    .into('tags')
+  knex.insert(newItem).into('tags')
     .returning(['id', 'name'])
     .then((results) => {
       const result = results[0];
@@ -51,7 +41,6 @@ router.post('/', (req, res, next) => {
 router.put('/:id', (req, res, next) => {
   const { id } = req.params;
   const { name } = req.body;
-  const updateObj = {};
 
   /***** Never trust users. Validate input *****/
   if (!name) {
@@ -60,12 +49,10 @@ router.put('/:id', (req, res, next) => {
     return next(err);
   }
 
+  const updateObj = {};
   updateObj.name = name;
   
-  knex
-    .update(updateObj)
-    .from('tags')
-    .where({id})
+  knex.update(updateObj).from('tags').where({id})
     .returning(['id', 'name'])
     .then(result => {
       const item = result[0];
@@ -75,24 +62,15 @@ router.put('/:id', (req, res, next) => {
         next();
       }
     })
-    .catch(err => {
-      next(err);
-    });
+    .catch(err => next(err));
 });
 
 router.delete('/:id', (req, res, next) => {
   const { id } = req.params;
 
-  knex
-    .del()
-    .from('tags')
-    .where({id})
-    .then(() => {
-      res.sendStatus(204);
-    })
-    .catch(err => {
-      next(err);
-    });
+  knex.del().from('tags').where({id})
+    .then(() => res.sendStatus(204))
+    .catch(err => next(err));
 });
 
 module.exports = router;

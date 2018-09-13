@@ -6,30 +6,21 @@ const knex = require('../knex');
 
 // Read all folders
 router.get('/', (req, res, next) => {
-  knex.select('id', 'name')
+  knex.select()
     .from('folders')
-    .then(results => {
-      res.json(results);
-    })
+    .then(results => res.json(results))
     .catch(err => next(err));
 });
 
 // Find folder by id
 router.get('/:id', (req, res, next) => {
   const id = req.params.id;
-  knex('folders')
-    .first('id', 'name')
-    .where({id: id})
-    .then(item => {
-      if (item) {
-        res.json(item);
-      } else {
-        next();
-      }
-    })
-    .catch(err => {
-      next(err);
-    });
+  knex
+    .first()
+    .from('folders')
+    .where({id})
+    .then(item => item ? res.json(item) : next())
+    .catch(err => next(err));
 });
 
 // Create folder
@@ -52,9 +43,7 @@ router.post('/', (req, res, next) => {
         res.location(`http://${req.headers.host}/folders/${item.id}`).status(201).json(item);
       }
     })
-    .catch(err => {
-      next(err);
-    });
+    .catch(err => next(err));
 });
 
 // Update folder
@@ -97,15 +86,9 @@ router.put('/:id', (req, res, next) => {
 router.delete('/:id', (req, res, next) => {
   const id = req.params.id;
 
-  knex('folders')
-    .del()
-    .where({id: id})
-    .then(() => {
-      res.sendStatus(204);
-    })
-    .catch(err => {
-      next(err);
-    });
+  knex('folders').del().where({id})
+    .then(() => res.sendStatus(204))
+    .catch(err => next(err));
 });
 
 module.exports = router;
