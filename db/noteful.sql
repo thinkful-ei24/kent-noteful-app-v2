@@ -1,4 +1,4 @@
--- psql -U dev -d noteful-app -f ~/Desktop/projects/ei24/noteful/noteful-app-v2/db/noteful.sql
+-- psql -U dev -d noteful-app -f ~/Desktop/projects/ei24/noteful/noteful-v2/db/noteful.sql
 DROP TABLE IF EXISTS notes_tags;
 DROP TABLE IF EXISTS tags;
 DROP TABLE IF EXISTS notes;
