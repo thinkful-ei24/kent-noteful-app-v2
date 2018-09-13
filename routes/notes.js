@@ -8,7 +8,7 @@ const hydrateNotes = require('../utils/hydrateNotes');
 const getAllNotes = function() {
   return knex
     .select('notes.id', 'title', 'content',
-      'folders.id as folder_id', 'folders.name as folderName',
+      'folders.id as folderId', 'folders.name as folderName',
       'tags.id as tagId', 'tags.name as tagName')
     .from('notes')
     .leftJoin('folders', 'notes.folder_id', 'folders.id')
