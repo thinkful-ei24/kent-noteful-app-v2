@@ -225,7 +225,7 @@ describe('Noteful API', function () {
 
     });
 
-    it.skip('should respond with a 404 for an invalid id', function () {
+    it('should respond with a 404 for an invalid id', function () {
       const updatedNote = {
         'title': 'updated note to test PUT feature',
         'content': 'Working test?',
@@ -234,7 +234,7 @@ describe('Noteful API', function () {
       };
 
       return chai.request(app)
-        .put('/api/notes/123456')
+        .put('/api/notes/03452600')
         .send(updatedNote)
         .then(function(res) {
           expect(res).to.have.status(404);
@@ -242,17 +242,46 @@ describe('Noteful API', function () {
     });
 
     it('should return an error when missing "title" field', function () {
+      const updatedNote = {
+        'content': 'No Title?',
+        'folderId': 101,
+        'tags': [1,2,3]
+      };
 
+      return chai.request(app)
+        .get('/api/notes')
+        .then(function(res) {
+          updatedNote.id = res.body[0].id;
+          return chai.request(app)
+            .put(`/api/notes/${updatedNote.id}`)
+            .send(updatedNote);
+        })
+        .then(function(res) {
+          expect(res).to.have.status(400);
+          expect(res).to.be.json;
+          expect(res.body).to.be.an('object');
+          expect(res.body.message).to.equal('Missing `title` in request body');
+        });
     });
 
   });
 
-  // describe('DELETE  /api/notes/:id', function () {
+  describe('DELETE /api/notes/:id', function () {
 
-  //   it('should delete an item by id', function () {
+    it('should delete an item by id', function () {
+      let id;
+      return chai.request(app)
+        .get('/api/notes')
+        .then(function(res) {
+          id = res.body[0].id;
+          return chai.request(app)
+            .delete(`/api/notes/${id}`)
+        })
+        .then(function(res) {
+          expect(res).to.have.status(204);
+        })
+    });
 
-  //   });
-
-  // });
+  });
 
 });

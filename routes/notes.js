@@ -109,6 +109,13 @@ router.put('/:id', (req, res, next) => {
     err.status = 400;
     return next(err);
   }
+  console.log('---------------------');
+  console.log('---------------------');
+  getNoteById(noteId)
+    .then(result => {
+      if (!result.length) next();
+    })
+    .catch(err => next(err));
 
   /***** Never trust users - validate input *****/
   const updateObj = {
@@ -125,7 +132,7 @@ router.put('/:id', (req, res, next) => {
     })
     .then(() => getNoteById(noteId))
     .then(result => {
-      if (result) {
+      if (result.length > 0) {
         const hydrated = hydrateNotes(result)[0];
         res.json(hydrated);
       } else {
