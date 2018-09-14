@@ -38,19 +38,26 @@ app.use((req, res, next) => {
 });
 
 // Custom Error Handler
+// eslint-disable-next-line no-unused-vars
 app.use((err, req, res, next) => {
   if (err.status) {
     const errBody = Object.assign({}, err, { message: err.message });
     res.status(err.status).json(errBody);
   } else {
-    console.error(err);
+    console.error(err);// eslint-disable-line no-console
     res.status(500).json({ message: 'Internal Server Error' });
   }
 });
 
+/* eslint-disable no-console */
 // Listen for incoming connections
-app.listen(PORT, function () {
-  console.info(`Server listening on ${this.address().port}`);
-}).on('error', err => {
-  console.error(err);
-});
+if (require.main === module) {
+  app.listen(PORT, function () {
+    console.info(`Server listening on ${this.address().port}`);
+  }).on('error', err => {
+    console.error(err);
+  });  
+}
+/*eslint-enable no-console */
+
+module.exports = app; // Export for testing

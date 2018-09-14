@@ -51,7 +51,7 @@ router.get('/:id', (req, res, next) => {
   const { id } = req.params;
   getNoteById(id)
     .then(result => {
-      if (result) {
+      if (result.length > 0) {
         const hydrated = hydrateNotes(result)[0];
         res.json(hydrated);
       } else {
@@ -121,8 +121,6 @@ router.put('/:id', (req, res, next) => {
     .then(() => knex.del().from('notes_tags').where({note_id: noteId}))
     .then(() => {
       const tagsInsert = tags.map(tagId => ({ note_id: noteId, tag_id: tagId }));
-      console.log('running');
-      console.log('tags: ' + tags);
       return knex.insert(tagsInsert).into('notes_tags');
     })
     .then(() => getNoteById(noteId))
